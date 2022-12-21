@@ -5,7 +5,12 @@ alpha = 1
 beta = 2 * alpha
 Ce = 0.1
 Cd = 0
+L = 10
 nos_internos = 4
+
+
+def espaço_interno(nos_interior):
+    return L / (nos_interior + 1)
 
 
 def constante_pvc(alpha, beta, nos_interior):
@@ -21,7 +26,6 @@ def gauss_jacobi(matriz_A, matriz_x, matriz_b):
 
     for i in range(10):
         matriz_x = (matriz_b - dot(matriz_R, matriz_x)) / matriz_D
-
     return matriz_x
 
 
@@ -87,20 +91,22 @@ resultadoPVC = sistema_pvc(nos_internos, alpha, beta)
 
 import matplotlib.pyplot as plt
 
-vetor_x = []
-z = 1
+vetor_comprimento = [0]
+z = 0
 
-while z <= nos_internos + 2:
-    vetor_x.append(z)
+while z < nos_internos + 1:
+    vetor_comprimento.append(vetor_comprimento[z] + (espaço_interno(nos_internos)))
     z += 1
+
+print("vetor_comprimento", vetor_comprimento)
 
 
 def grafico_PVC():
 
-    plt.title("Gráfico dos valores de C com variação do espaço")
-    plt.plot(vetor_x, resultadoPVC, color="red", label="C")
+    plt.title("Gráfico dos valores de C com variação do comprimento")
+    plt.plot(vetor_comprimento, resultadoPVC, color="red", label="C")
     plt.legend()
-    plt.xlabel("Espaço")
+    plt.xlabel("Comprimento")
     plt.ylabel("Valor de C")
     plt.show()
 
@@ -114,21 +120,25 @@ def refinamento():
     for i in range(0, 4):
         vetor_nos_internos.append(vetor_nos_internos[i] + 2)
 
-    ######## AREA GRAFICO ##########
+    print("vetor nos internos:", vetor_nos_internos)
 
     for i in range(0, 5):
-        z = 1
-        vetor_x = []
-        while z <= vetor_nos_internos[i] + 2:
-            vetor_x.append(z)
+        vetor_comprimento = [0]
+        z = 0
+        while z < vetor_nos_internos[i] + 1:
+            vetor_comprimento.append(
+                vetor_comprimento[z] + (espaço_interno(vetor_nos_internos[i]))
+            )
             z += 1
         cor = ["blue", "pink", "purple", "red", "black"]
         print("\nResultados para nos internos = {}".format(vetor_nos_internos[i]))
         resultados_PVC = sistema_pvc(vetor_nos_internos[i], alpha, beta)
-        plt.title("Gráfico dos valores de C com variação do espaço")
-        plt.plot(vetor_x, resultados_PVC, color=cor[i], label=vetor_nos_internos[i])
+        plt.title("Gráfico dos valores de C com variação do comprimento")
+        plt.plot(
+            vetor_comprimento, resultados_PVC, color=cor[i], label=vetor_nos_internos[i]
+        )
         plt.legend(title="nós internos")
-        plt.xlabel("Espaço")
+        plt.xlabel("Comprimento")
         plt.ylabel("Valor de C")
 
     plt.title("Gráfico de refinamento para aumento de nós internos")
@@ -140,31 +150,66 @@ refinamento()
 
 def sensibilidade():
 
+    vetor_alpha_normal = [alpha]
     vetor_alpha = [alpha]
+    vetor_beta_normal = [beta]
     vetor_beta = [beta]
-    z = 1
-    for i in range(0, 4):
-        vetor_alpha.append(vetor_alpha[i] + 2)
-        vetor_beta.append(vetor_beta[i] + 0.5)
 
-    ######## AREA GRAFICO ##########
+    for i in range(0, 4):
+        vetor_alpha.append(vetor_alpha[i] * 2)
+        vetor_alpha_normal.append(vetor_alpha_normal[i])
+        vetor_beta.append(vetor_beta[i] / 2)
+        vetor_beta_normal.append(vetor_beta_normal[i])
+
+    fig, (grafico_alpha, grafico_beta) = plt.subplots(2, 1)
     for i in range(0, 5):
 
         cor = ["blue", "pink", "purple", "red", "black"]
         print(
             "\nResultados para alpha = {} e beta = {}".format(
-                vetor_alpha[i], vetor_beta[i]
+                vetor_alpha[i], vetor_beta_normal[i]
             )
         )
-        resultados_PVC = sistema_pvc(nos_internos, vetor_alpha[i], vetor_beta[i])
-        legenda = "valor {}, {}".format(vetor_alpha[i], vetor_beta[i])
-        plt.title("Gráfico dos valores de C com variação do espaço")
-        plt.plot(vetor_x, resultados_PVC, color=cor[i], label=legenda)
-        plt.legend(title="valor alpha, beta:")
-        plt.xlabel("Espaço")
-        plt.ylabel("Valor de C")
 
-    plt.title("Gráfico de sensibilidade para aumento de alpha e beta")
+        resultado_PVC_alpha = sistema_pvc(
+            nos_internos, vetor_alpha[i], vetor_beta_normal[i]
+        )
+
+        legenda_alpha_normal = "{}, {}".format(vetor_alpha[i], vetor_beta_normal[i])
+
+        grafico_alpha.plot(
+            vetor_comprimento,
+            resultado_PVC_alpha,
+            color=cor[i],
+            label=legenda_alpha_normal,
+        )
+        grafico_alpha.legend(title="valor alpha, beta", fontsize=7)
+        grafico_alpha.set_xlabel("Comprimento", fontsize=9)
+        grafico_alpha.set_ylabel("Valor de C", fontsize=9)
+
+        print(
+            "\nResultados para alpha = {} e beta = {}".format(
+                vetor_alpha_normal[i], vetor_beta[i]
+            )
+        )
+
+        resultado_PVC_beta = sistema_pvc(
+            nos_internos, vetor_alpha_normal[i], vetor_beta[i]
+        )
+
+        legenda_beta_normal = "{}, {}".format(vetor_alpha_normal[i], vetor_beta[i])
+
+        grafico_beta.plot(
+            vetor_comprimento,
+            resultado_PVC_beta,
+            color=cor[i],
+            label=legenda_beta_normal,
+        )
+        grafico_beta.legend(title="valor alpha, beta", fontsize=7)
+        grafico_beta.set_xlabel("Comprimento", fontsize=9)
+        grafico_beta.set_ylabel("Valor de C", fontsize=9)
+
+    plt.suptitle("Gráfico de sensibilidade para aumento de alpha e beta")
     plt.show()
 
 
