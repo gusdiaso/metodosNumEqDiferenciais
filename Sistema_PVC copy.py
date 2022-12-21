@@ -14,7 +14,7 @@ def constante_pvc(alpha, beta, nos_interior):
     return 2 + ((((nos_interior + 1) ** 2) * k) / D)
 
 
-def gauss_jacobi(matriz_A, matriz_x, matriz_b, nos_interior):
+def gauss_jacobi(matriz_A, matriz_x, matriz_b):
 
     matriz_D = diag(matriz_A)
     matriz_R = matriz_A - diagflat(matriz_D)
@@ -33,7 +33,6 @@ def sistema_pvc(nos_interior, alpha_, beta_):
     matriz_x = []
     a = -1
     b = 0
-    # deltaX = nos_internos + 1
 
     for l in range(nos_interior):
         linha = []
@@ -66,7 +65,7 @@ def sistema_pvc(nos_interior, alpha_, beta_):
     print("\nMatriz x:")
     print(matriz_x)
 
-    matriz_solucao = gauss_jacobi(matriz_A, matriz_x, matriz_b, nos_interior)
+    matriz_solucao = gauss_jacobi(matriz_A, matriz_x, matriz_b)
     print("\nMatriz solucao:")
 
     i = 2

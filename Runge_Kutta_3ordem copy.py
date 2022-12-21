@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 # uma dezena
 alpha = 10
@@ -8,11 +7,11 @@ gamma = 14
 # algumas dezenas
 Ca = 20
 Cb = 0
-Cc = 30
+Cc = 25
 # algumas unidades
-Tmax = 2
+Tmax = 1
 T = 0
-deltaT = 1
+deltaT = 0.00025
 
 
 def derivada_Ca(Ca, Cb, Cc, alpha):
@@ -28,7 +27,6 @@ def derivada_Cc(Ca, Cb, Cc, gamma):
 
 
 def rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma):
-    # k [Ca,Cb,Cc]
     k1 = [0, 0, 0]
     k2 = [0, 0, 0]
     k3 = [0, 0, 0]
@@ -40,12 +38,9 @@ def rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma):
 
     while T < Tmax:
 
-        # print("\nITERACAO DO TEMPO {} + PASSO DE TEMPO {}".format(T, deltaT))
-
         k1[0] = derivada_Ca(Ca, Cb, Cc, alpha)
         k1[1] = derivada_Cb(Ca, Cb, Cc, beta)
         k1[2] = derivada_Cc(Ca, Cb, Cc, gamma)
-        # print("k1_Ca = {}\nk1_Cb = {}\nk1_Cc = {}".format(k1[0], k1[1], k1[2]))
 
         k2[0] = derivada_Ca(
             Ca + k1[0] * (deltaT / 2),
@@ -65,7 +60,6 @@ def rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma):
             Cc + k1[2] * (deltaT / 2),
             gamma,
         )
-        # print("\nk2_Ca = {}\nk2_Cb = {}\nk2_Cc = {}".format(k2[0], k2[1], k2[2]))
 
         k3[0] = derivada_Ca(
             Ca - (k1[0] * deltaT) + (2 * k2[0] * deltaT),
@@ -85,12 +79,10 @@ def rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma):
             Cc - (k1[2] * deltaT) + (2 * k2[2] * deltaT),
             gamma,
         )
-        # print("\nk3_Ca = {}\nk3_Cb = {}\nk3_Cc = {}".format(k3[0], k3[1], k3[2]))
 
         y[0] = y[0] + (1 / 6) * (k1[0] + 4 * k2[0] + k3[0]) * deltaT
         y[1] = y[1] + (1 / 6) * (k1[1] + 4 * k2[1] + k3[1]) * deltaT
         y[2] = y[2] + (1 / 6) * (k1[2] + 4 * k2[2] + k3[2]) * deltaT
-        # print("\nCa = {}\nCb = {}\nCc = {}".format(y[0], y[1], y[2]))
 
         Ca = y[0]
         Cb = y[1]
@@ -107,12 +99,7 @@ def rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma):
 
 resultados_RK = rungeKutta(T, deltaT, Ca, Cb, Cc, alpha, beta, gamma)
 
-print(
-    "\nRESULTADO FINAL DAS ITERACOES\nDEPOIS DOS TEMPOS {} COM PASSO DE TEMPO DE {}".format(
-        resultados_RK[6], deltaT
-    )
-)
-
+print("\nDEPOIS DAS ITERAÇOES, AS APROXIMACOES FORAM:")
 print(
     "\nCa = {}\nCb = {}\nCc = {}".format(
         resultados_RK[0], resultados_RK[1], resultados_RK[2]
@@ -136,26 +123,22 @@ grafico_RK(resultados_RK)
 
 
 def refinamento():
-    # vetor_deltaT = [0.1, 0.2, 0.3, 0.4, 0.5]
     vetor_deltaT = [deltaT]
 
     for i in range(0, 4):
-        # vetor_deltaT.append(vetor_deltaT[i] * 2)
-        vetor_deltaT.append(vetor_deltaT[i] / 2)
+        vetor_deltaT.append(vetor_deltaT[i] * 2)
 
-    ######## AREA GRAFICO ##########
     fig, (grafico_Ca, grafico_Cb, grafico_Cc) = plt.subplots(3, 1)
 
     for i in range(0, 5):
         resultados_RK = rungeKutta(T, vetor_deltaT[i], Ca, Cb, Cc, alpha, beta, gamma)
         cor = ["blue", "pink", "purple", "red", "black"]
-        # print("\nResultado {} de RK: {}".format(i, resultados_RK))
 
         grafico_Ca.plot(
             resultados_RK[6],
             resultados_RK[3],
             color=cor[i],
-            label="%.2f" % (float(vetor_deltaT[i])),
+            label="%.4f" % (float(vetor_deltaT[i])),
         )
         grafico_Ca.legend(fontsize=7)
         grafico_Ca.set_xlabel("tempo(s)", fontsize=9)
@@ -165,7 +148,7 @@ def refinamento():
             resultados_RK[6],
             resultados_RK[4],
             color=cor[i],
-            label="%.2f" % (float(vetor_deltaT[i])),
+            label="%.4f" % (float(vetor_deltaT[i])),
         )
         grafico_Cb.legend(fontsize=7)
         grafico_Cb.set_xlabel("tempo(s)", fontsize=9)
@@ -175,7 +158,7 @@ def refinamento():
             resultados_RK[6],
             resultados_RK[5],
             color=cor[i],
-            label="%.2f" % (float(vetor_deltaT[i])),
+            label="%.4f" % (float(vetor_deltaT[i])),
         )
         grafico_Cc.legend(fontsize=7)
         grafico_Cc.set_xlabel("tempo(s)", fontsize=9)
@@ -189,9 +172,6 @@ refinamento()
 
 
 def sensibilidade():
-    # sensibilidade_alpha = [alpha-0.1*alpha, alpha-0.05*alpha, alpha, alpha+0.05*alpha, alpha+0.10*alpha]
-    # sensibilidade_beta = [beta-0.1*beta, beta-0.05*beta, beta, beta+0.05*beta, beta+0.10*beta]
-    # sensibilidade_gamma = [gamma-0.1*gamma, gamma-0.05*gamma, gamma, gamma+0.05*gamma, gamma+0.10*gamma]
 
     sensibilidade_alpha = [alpha]
     sensibilidade_beta = [beta]
@@ -203,7 +183,6 @@ def sensibilidade():
         sensibilidade_beta.append(sensibilidade_beta[i] / 2)
         sensibilidade_gamma.append(sensibilidade_gamma[i] / 2)
 
-    ######## AREA GRAFICO ##########
     fig, (grafico_alpha, grafico_beta, grafico_gamma) = plt.subplots(3, 1)
 
     for i in range(0, 5):
@@ -218,7 +197,6 @@ def sensibilidade():
             sensibilidade_gamma[i],
         )
         cor = ["blue", "pink", "purple", "red", "black"]
-        # print("\nResultado {} de RK: {}".format(i, resultados_RK))
 
         grafico_alpha.plot(
             resultados_RK[6],
